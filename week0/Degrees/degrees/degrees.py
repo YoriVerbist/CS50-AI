@@ -92,31 +92,37 @@ def shortest_path(source, target):
     If no possible path, returns None.
     """
 
-   num_explored = 0
+    num_explored = 0
 
-   start = Node(source, None, None)
-   frontier = QueueFrontier()
-   frontier.add(start)
+    start = Node(source, None, None)
+    frontier = QueueFrontier()
+    frontier.add(start)
+    
 
-   explored = set()
+    explored = set()
 
-   while True:
-           if frontier.empty():
-                raise Exception("No solution")
+    while True:
+        if frontier.empty():
+            return None
 
-           # Choose a node from frontier
-           node = frontier.remove()
-           num_explored += 1
+        # Choose a node from frontier
+        node = frontier.remove()
+        num_explored += 1
 
-           if node.state == target:
-                actions = []
-                cells = []
-                while node.parent is not None:
-                    actions.append(node.action)
-                    cells.append(node.state)
-                    node = node.parent
-                actions.reverse()
-                cells.reverse()
+        if node.state == target:
+            solution = []
+            while node.parent is not None:
+               solution.append(tuple((int(node.action), int(node.state))))
+               node = node.parent
+               print(solution)
+            return solution[::-1]
+        explored.add(node.state)
+
+        for action, state in neighbors_for_person(node.state):
+            print(action, state)
+            if not frontier.contains_state(state) and state not in explored:
+                child = Node(state, node, action)
+                frontier.add(child)
 
 
 def person_id_for_name(name):
