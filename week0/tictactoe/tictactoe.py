@@ -9,7 +9,6 @@ import copy
 X = "X"
 O = "O"
 EMPTY = None
-LAST_MOVE = X
 
 def initial_state():
     """
@@ -26,11 +25,17 @@ def player(board):
     """
     if board == initial_state():
         return X
-    elif LAST_MOVE == X:
-        LAST_MOVE = O
+    count_x = 0
+    count_O = 0
+    for row in range(3):
+        for col in range(3):
+            if board[row][col] == 'X':
+                count_x += 1
+            elif board[row][col] == 'O':
+                count_O += 1
+    if count_x > count_O:
         return O
     else:
-        LAST_MOVE = X
         return X
 
 
@@ -44,8 +49,6 @@ def actions(board):
         for column in range(3):
             if board[row][column] == None:
                 moves.add(tuple((row, column)))
-    print(board)
-    print(moves)
     return moves
 
 
@@ -54,10 +57,10 @@ def result(board, action):
     Returns the board that results from making move (i, j) on the board.
     """
     new_board = copy.deepcopy(board)
-    for row in range(len(board)):
-        for column in range(row):
+    for row in range(3):
+        for column in range(3):
             try:
-                if new_board[row][column] == action:
+                if (row, column) == action:
                     new_board[row][column] = player(new_board)
             except Exception:
                 raise Exception
@@ -71,7 +74,7 @@ def winner(board):
     # Check for horizontal winners
     for row in board:
         if row.count(row[0]) == len(row) and row[0] != None:
-            return LAST_MOVE 
+            return row[0]
 
     # Check for vertical winners
     for col in range(len(board[0])):
@@ -79,7 +82,7 @@ def winner(board):
         for row in board:
             check.append(row[col])
         if check.count(check[0]) == len(check) and check[0] != None:
-            return LAST_MOVE
+            return check[0]
     
     # / diagonal
     diags = []
@@ -87,8 +90,7 @@ def winner(board):
         diags.append(board[idx][reverse_idx])
 
     if diags.count(diags[0]) == len(diags) and diags[0] != None:
-        print(3)
-        return LAST_MOVE
+        return diags[0]
     
     # \ diagonal
     diags = []
@@ -96,7 +98,7 @@ def winner(board):
         diags.append(board[ix][ix])
 
     if diags.count(diags[0]) == len(diags) and diags[0] != None:
-        return LAST_MOVE
+        return diags[0]
     return None
 
 
@@ -132,21 +134,30 @@ def minimax(board):
     """
     if terminal(board) == True:
         return None
-    outcome = board.copy()
-    while True:
-        if LAST_MOVE == X:
-            moves = actions(outcome)
-            i = math.inf
-            for move in moves:
-                action = minValue(results(outcome, move))
-                if action < i:
-                    i = action
-        
+    if player(board) == X:
+        possibilities = actions(board)
+        best = -10000000000000000000
+        for possibility in possibilities:
+            current = minValue(result(board, possibility))
+            if current > best:
+                best = current
+                action = possibility
+    elif player(board) == O:
+        possibilities = actions(board)
+        best = 10000000000000000000
+        for possibility in possibilities:
+            current = maxValue(result(board,possibility))
+            if current < best:
+                best = current
+                action = possibility
+    return action
+ 
+
 
 def maxValue(state):
     if terminal(state):
         return utility(state)
-    v = -math.inf
+    v = -10000000000000000000
     for action in actions(state):
         v = max(v, minValue(result(state, action)))
     return v
@@ -155,7 +166,7 @@ def maxValue(state):
 def minValue(state):
     if terminal(state):
         return utility(state)
-    v = math.inf
+    v = 10000000000000000000
     for action in actions(state):
         v = min(v, maxValue(result(state, action)))
     return v
