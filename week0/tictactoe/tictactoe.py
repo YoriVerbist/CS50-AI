@@ -77,7 +77,7 @@ def winner(board):
             return row[0]
 
     # Check for vertical winners
-    for col in range(len(board[0])):
+    for col in range(3):
         check = []
         for row in board:
             check.append(row[col])
@@ -109,7 +109,7 @@ def terminal(board):
     if winner(board) != None:
         return True
     
-    for row in range(len(board)):
+    for row in range(3):
         for col in range(row):
             if board[row][col] == None:
                 return False
