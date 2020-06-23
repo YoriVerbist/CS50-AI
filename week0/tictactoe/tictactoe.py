@@ -110,7 +110,7 @@ def terminal(board):
         return True
     
     for row in range(3):
-        for col in range(row):
+        for col in range(3):
             if board[row][col] == None:
                 return False
     return True
