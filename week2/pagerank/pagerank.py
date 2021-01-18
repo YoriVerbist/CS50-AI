@@ -60,11 +60,12 @@ def transition_model(corpus: dict, page: str, damping_factor: float) -> dict:
     chances = dict()
     for item, value in corpus.items():
         if item == page:
+            all_items = len(value) + 1
             items = len(value)
             chance = damping_factor / items
-            chances[item] = (1 - damping_factor) / items
+            chances[item] = (1 - damping_factor) / all_items
+            chance += (1 - damping_factor) / all_items
             for val in value:
-                chance += (1 - damping_factor) / items
                 chances[val] = chance
     return chances
     
@@ -80,11 +81,11 @@ def sample_pagerank(corpus: dict, damping_factor: float, n: int) -> dict:
     """
     sample = dict()
     names = list(corpus.keys())
-    page = corpus[names[random.randint(0,len(names)-1)]]
+    page = names[random.randint(0,len(names)-1)]
     for i in range(n):
         model = transition_model(corpus, page, damping_factor)
-        for key, value in model:
-            sample[key] = value
+        for item in model:
+            sample[item] = model[item]
     return sample
 
 
@@ -99,9 +100,19 @@ def iterate_pagerank(corpus: dict, damping_factor: float) -> dict:
     """
     rank = dict()
     n = len(corpus)
+    pr = 1/n
     for key, value in corpus.items():
-        rank[key] = 1 / n
+        rank[key] = pr
+    for key, value in corpus.items():
+        pr = (1 - damping_factor) / n
+        sumation = 0
+        links = len(value)
+        for item in value:
+            sumation += rank[item] / len(corpus[item])
+        pr += (damping_factor * sumation)
+        rank[key] = pr
     return rank
+
 
 if __name__ == "__main__":
     main()
