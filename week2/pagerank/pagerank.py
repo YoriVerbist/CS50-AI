@@ -2,6 +2,7 @@ import os
 import random
 import re
 import sys
+import math
 
 DAMPING = 0.85
 SAMPLES = 10000
@@ -80,12 +81,21 @@ def sample_pagerank(corpus: dict, damping_factor: float, n: int) -> dict:
     PageRank values should sum to 1.
     """
     sample = dict()
-    names = list(corpus.keys())
-    page = names[random.randint(0,len(names)-1)]
+    page = random.choices(list(corpus.keys()))[0]
     for i in range(n):
         model = transition_model(corpus, page, damping_factor)
-        for item in model:
-            sample[item] = model[item]
+        # Choices uses a weight as second argurment
+        page = random.choices(list(model), [v for k, v in model.items()])[0]
+
+        # Check how many times we surfed to which page
+        if page not in sample:
+            sample[page] = 1
+        else:
+            sample[page] += 1
+
+    # Normalize the counts
+    for key, value in sample.items():
+        sample[key] = value / n
     return sample
 
 
@@ -99,18 +109,33 @@ def iterate_pagerank(corpus: dict, damping_factor: float) -> dict:
     PageRank values should sum to 1.
     """
     rank = dict()
+    new_rank = dict()
     n = len(corpus)
     pr = 1/n
-    for key, value in corpus.items():
+
+    converging = False
+
+    for key in corpus.keys():
         rank[key] = pr
-    for key, value in corpus.items():
-        pr = (1 - damping_factor) / n
-        sumation = 0
-        links = len(value)
-        for item in value:
-            sumation += rank[item] / len(corpus[item])
-        pr += (damping_factor * sumation)
-        rank[key] = pr
+
+    while not converging:
+        for page in rank:
+            total = float(0)
+            for pos_page in corpus:
+                # Check for possible page that links to the current page
+                if page in corpus[pos_page]:
+                    total += rank[pos_page] / len(corpus[pos_page])
+                # If a page has no links then it has a link to itself and to all the other pages
+                if not corpus[pos_page]:
+                    total += rank[pos_page] / n
+            new_rank[page] = (1 - damping_factor) / n + damping_factor * total
+        converging = True
+        # Keep doing this until it starts converging
+        for page in rank:
+            if not math.isclose(new_rank[page], rank[page], abs_tol=0.001):
+                converging = False
+            rank[page] = new_rank[page]
+
     return rank
 
 
