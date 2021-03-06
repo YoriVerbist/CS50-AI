@@ -136,7 +136,7 @@ def minimax(board):
         return None
     if player(board) == X:
         possibilities = actions(board)
-        best = -10000000000000000000
+        best = -math.inf
         for possibility in possibilities:
             current = minValue(result(board, possibility))
             if current > best:
@@ -144,7 +144,7 @@ def minimax(board):
                 action = possibility
     elif player(board) == O:
         possibilities = actions(board)
-        best = 10000000000000000000
+        best = math.inf
         for possibility in possibilities:
             current = maxValue(result(board,possibility))
             if current < best:
@@ -157,7 +157,7 @@ def minimax(board):
 def maxValue(state):
     if terminal(state):
         return utility(state)
-    v = -10000000000000000000
+    v = -math.inf
     for action in actions(state):
         v = max(v, minValue(result(state, action)))
     return v
@@ -166,7 +166,7 @@ def maxValue(state):
 def minValue(state):
     if terminal(state):
         return utility(state)
-    v = 10000000000000000000
+    v = math.inf
     for action in actions(state):
         v = min(v, maxValue(result(state, action)))
     return v
